@@ -36,6 +36,7 @@
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
+#include "bench_trace_port.h"
 #include "task.h"
 #include "timers.h"
 #include "event_groups.h"
@@ -392,6 +393,7 @@
                  * task's event list item so the kernel knows when a match is
                  * found.  Then enter the blocked state. */
                 vTaskPlaceOnUnorderedEventList( &( pxEventBits->xTasksWaitingForBits ), ( uxBitsToWaitFor | uxControlBits ), xTicksToWait );
+                bench_trace_path_waitlist((uint32_t)uxBitsToWaitFor,(uint32_t)xTicksToWait,(uint32_t)uxCurrentEventBits,(uint32_t)uxControlBits);
 
                 /* This is obsolete as it will get set after the task unblocks, but
                  * some compilers mistakenly generate a warning about the variable
