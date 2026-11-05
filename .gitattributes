@@ -1,1 +1,30 @@
 *   text=auto
+
+# RX74M captured generated inputs: preserve exact archived bytes.
+LICENSE.md -text whitespace=cr-at-eol
+event_groups.c -text whitespace=cr-at-eol
+include/FreeRTOS.h -text whitespace=cr-at-eol
+include/atomic.h -text whitespace=cr-at-eol
+include/croutine.h -text whitespace=cr-at-eol
+include/deprecated_definitions.h -text whitespace=cr-at-eol
+include/event_groups.h -text whitespace=cr-at-eol
+include/list.h -text whitespace=cr-at-eol
+include/message_buffer.h -text whitespace=cr-at-eol
+include/mpu_prototypes.h -text whitespace=cr-at-eol
+include/mpu_wrappers.h -text whitespace=cr-at-eol
+include/newlib-freertos.h -text whitespace=cr-at-eol
+include/picolibc-freertos.h -text whitespace=cr-at-eol
+include/portable.h -text whitespace=cr-at-eol
+include/projdefs.h -text whitespace=cr-at-eol
+include/queue.h -text whitespace=cr-at-eol
+include/semphr.h -text whitespace=cr-at-eol
+include/stack_macros.h -text whitespace=cr-at-eol
+include/stream_buffer.h -text whitespace=cr-at-eol
+include/task.h -text whitespace=cr-at-eol
+include/timers.h -text whitespace=cr-at-eol
+list.c -text whitespace=cr-at-eol
+portable/MemMang/heap_4.c -text whitespace=cr-at-eol
+queue.c -text whitespace=cr-at-eol
+stream_buffer.c -text whitespace=cr-at-eol
+tasks.c -text whitespace=cr-at-eol
+timers.c -text whitespace=cr-at-eol

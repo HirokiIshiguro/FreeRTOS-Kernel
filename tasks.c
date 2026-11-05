@@ -37,7 +37,9 @@
 
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
+#include "bsp_api.h"
 #include "task.h"
+#include "bench_trace_port.h"
 #include "timers.h"
 #include "stack_macros.h"
 
@@ -456,12 +458,12 @@ typedef tskTCB TCB_t;
  * xDelayedTaskList1 and xDelayedTaskList2 could be moved to function scope but
  * doing so breaks some kernel aware debuggers and debuggers that rely on removing
  * the static qualifier. */
-PRIVILEGED_DATA static List_t pxReadyTasksLists[ configMAX_PRIORITIES ]; /**< Prioritised ready tasks. */
-PRIVILEGED_DATA static List_t xDelayedTaskList1;                         /**< Delayed tasks. */
-PRIVILEGED_DATA static List_t xDelayedTaskList2;                         /**< Delayed tasks (two lists are used - one for delays that have overflowed the current tick count. */
-PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList;              /**< Points to the delayed task list currently being used. */
-PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList;      /**< Points to the delayed task list currently being used to hold tasks that have overflowed the current tick count. */
-PRIVILEGED_DATA static List_t xPendingReadyList;                         /**< Tasks that have been readied while the scheduler was suspended.  They will be moved to the ready list when the scheduler is resumed. */
+PRIVILEGED_DATA static List_t pxReadyTasksLists[ configMAX_PRIORITIES ] BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram"); /**< Prioritised ready tasks. */
+PRIVILEGED_DATA static List_t xDelayedTaskList1 BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram");                         /**< Delayed tasks. */
+PRIVILEGED_DATA static List_t xDelayedTaskList2 BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram");                         /**< Delayed tasks (two lists are used - one for delays that have overflowed the current tick count. */
+PRIVILEGED_DATA static List_t * volatile pxDelayedTaskList BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram");              /**< Points to the delayed task list currently being used. */
+PRIVILEGED_DATA static List_t * volatile pxOverflowDelayedTaskList BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram");      /**< Points to the delayed task list currently being used to hold tasks that have overflowed the current tick count. */
+PRIVILEGED_DATA static List_t xPendingReadyList BSP_ALIGN_VARIABLE(8) BSP_PLACE_IN_SECTION(".lram");                         /**< Tasks that have been readied while the scheduler was suspended.  They will be moved to the ready list when the scheduler is resumed. */
 
 #if ( INCLUDE_vTaskDelete == 1 )
 
@@ -8122,6 +8124,7 @@ TickType_t uxTaskResetEventItemValue( void )
         TCB_t * pxTCB;
         uint8_t ucOriginalNotifyState;
         UBaseType_t uxSavedInterruptStatus;
+        bench_timing_span_t timing_notify;
 
         traceENTER_vTaskGenericNotifyGiveFromISR( xTaskToNotify, uxIndexToNotify, pxHigherPriorityTaskWoken );
 
@@ -8152,6 +8155,7 @@ TickType_t uxTaskResetEventItemValue( void )
         /* More details at: https://github.com/FreeRTOS/FreeRTOS-Kernel/blob/main/MISRA.md#dir-47 */
         /* coverity[misra_c_2012_directive_4_7_violation] */
         uxSavedInterruptStatus = ( UBaseType_t ) taskENTER_CRITICAL_FROM_ISR();
+        bench_trace_timing_begin(&timing_notify,(uint32_t)uxSavedInterruptStatus);
         {
             ucOriginalNotifyState = pxTCB->ucNotifyState[ uxIndexToNotify ];
             pxTCB->ucNotifyState[ uxIndexToNotify ] = taskNOTIFICATION_RECEIVED;
@@ -8221,7 +8225,9 @@ TickType_t uxTaskResetEventItemValue( void )
                 #endif /* #if ( configNUMBER_OF_CORES == 1 ) */
             }
         }
+        bench_trace_timing_end(&timing_notify);
         taskEXIT_CRITICAL_FROM_ISR( uxSavedInterruptStatus );
+        bench_trace_timing_span(TIM_KERNEL_NOTIFY_MASK_SPAN,0xffffU,&timing_notify,0U);
 
         traceRETURN_vTaskGenericNotifyGiveFromISR();
     }
